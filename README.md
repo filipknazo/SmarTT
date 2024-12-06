@@ -28,7 +28,7 @@ Our solution leverages AI to dynamically adjust traffic flow by learning from re
    - Optimization of traffic lights.
    - Predictive analysis using LSTM.
 2. **City-Specific Simulation**:
-   - Custom Trnava map for realistic testing using SUMO Eclipse.
+   - Custom Trnava map for realistic testing using SUMO Eclipse -> https://eclipse.dev/sumo/.
    
 ---
 
