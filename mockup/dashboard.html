@@ -140,39 +140,39 @@
     </nav>
 
     <!-- Dashboard Section -->
-    <div class="container py-5">
-        <div class="text-center mb-5">
-            <h2>Dashboard</h2>
-            <p class="text-muted">Vizualizácia reálnych údajov a analýza modelov.</p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h2>Dashboard</h2>
+        <p class="text-muted">Vizualizácia reálnych údajov AI serveru.</p>
+    </div>
+    <div class="row g-4">
+        <!-- Chart Containers -->
+        <div class="col-md-6">
+            <h4>Sieťová prevádzka</h4>
+            <canvas id="networkTrafficChart"></canvas>
         </div>
-        <div class="row g-4">
-            <!-- Chart Containers -->
-            <div class="col-md-6">
-                <h4>Zber údajov</h4>
-                <canvas id="dataCollectionChart"></canvas>
-            </div>
-            <div class="col-md-6">
-                <h4>Spracovanie modelu</h4>
-                <canvas id="modelProcessingChart"></canvas>
-            </div>
-            <div class="col-md-6">
-                <h4>Rozhodnutia modelu</h4>
-                <canvas id="modelDecisionsChart"></canvas>
-            </div>
-            <div class="col-md-6">
-                <h4>Počet nahraných dát</h4>
-                <canvas id="uploadedDataChart"></canvas>
-            </div>
-            <div class="col-md-6">
-                <h4>Čas spracovania</h4>
-                <canvas id="processingTimeChart"></canvas>
-            </div>
-            <div class="col-md-6">
-                <h4>Presnosť modelu</h4>
-                <canvas id="modelAccuracyChart"></canvas>
-            </div>
+        <div class="col-md-6">
+            <h4>Zaťaženie GPU</h4>
+            <canvas id="gpuLoadChart"></canvas>
+        </div>
+        <div class="col-md-6">
+            <h4>Zaťaženie CPU</h4>
+            <canvas id="cpuLoadChart"></canvas>
+        </div>
+        <div class="col-md-6">
+            <h4>RAM pamäť</h4>
+            <canvas id="ramMemoryChart"></canvas>
+        </div>
+        <div class="col-md-6">
+            <h4>Úložisko</h4>
+            <canvas id="storageChart"></canvas>
+        </div>
+        <div class="col-md-6">
+            <h4>Počet signálnych plánov</h4>
+            <canvas id="signalPlansChart"></canvas>
         </div>
     </div>
+</div>
 
     <!-- Footer -->
     <footer class="footer text-center">
@@ -228,39 +228,39 @@ const createChart = (context, label, initialData, color) => {
 };
 
 // Initialize all charts with placeholder data
-charts.dataCollectionChart = createChart(
-    document.getElementById('dataCollectionChart').getContext('2d'),
-    'Prichádzajúce údaje (vozidlá/minúta)',
+charts.networkTrafficChart = createChart(
+    document.getElementById('networkTrafficChart').getContext('2d'),
+    'Sieťová prevádzka (MB/s)',
     [0],
     '#21347b'
 );
-charts.modelProcessingChart = createChart(
-    document.getElementById('modelProcessingChart').getContext('2d'),
-    'Čas spracovania (ms)',
+charts.gpuLoadChart = createChart(
+    document.getElementById('gpuLoadChart').getContext('2d'),
+    'Zaťaženie GPU (%)',
     [0],
     '#c6a171'
 );
-charts.modelDecisionsChart = createChart(
-    document.getElementById('modelDecisionsChart').getContext('2d'),
-    'Rozhodnutia (semafory)',
+charts.cpuLoadChart = createChart(
+    document.getElementById('cpuLoadChart').getContext('2d'),
+    'Zaťaženie CPU (%)',
     [0],
     '#9cb991'
 );
-charts.uploadedDataChart = createChart(
-    document.getElementById('uploadedDataChart').getContext('2d'),
-    'Nahrané dáta',
+charts.ramMemoryChart = createChart(
+    document.getElementById('ramMemoryChart').getContext('2d'),
+    'RAM pamäť (GB)',
     [0],
     '#e6b360'
 );
-charts.processingTimeChart = createChart(
-    document.getElementById('processingTimeChart').getContext('2d'),
-    'Čas spracovania (s)',
+charts.storageChart = createChart(
+    document.getElementById('storageChart').getContext('2d'),
+    'Úložisko (GB)',
     [0],
     '#6e83b2'
 );
-charts.modelAccuracyChart = createChart(
-    document.getElementById('modelAccuracyChart').getContext('2d'),
-    'Presnosť modelu (%)',
+charts.signalPlansChart = createChart(
+    document.getElementById('signalPlansChart').getContext('2d'),
+    'Signálne plány (plány/min)',
     [0],
     '#d7bc98'
 );
@@ -268,12 +268,12 @@ charts.modelAccuracyChart = createChart(
 // Simulate real-time API data (replace this with actual API calls)
 const simulateAPIData = () => {
     const data = {
-        dataCollectionChart: Math.floor(Math.random() * 500 + 100), // Vehicles per minute
-        modelProcessingChart: Math.random() * 200 + 800, // Processing time in ms
-        modelDecisionsChart: Math.floor(Math.random() * 100 + 50), // Semaphore decisions
-        uploadedDataChart: Math.floor(Math.random() * 200), // Uploaded data packets
-        processingTimeChart: Math.random() * 5 + 1, // Processing time in seconds
-        modelAccuracyChart: Math.random() * 10 + 90, // Accuracy in percentage
+        networkTrafficChart: Math.random() * 100 + 50, // MB/s
+        gpuLoadChart: Math.random() * 50 + 30, // GPU load percentage
+        cpuLoadChart: Math.random() * 70 + 20, // CPU load percentage
+        ramMemoryChart: Math.random() * 16 + 4, // RAM usage in GB
+        storageChart: Math.random() * 500 + 100, // Storage usage in GB
+        signalPlansChart: Math.floor(Math.random() * 30 + 10), // Signal plans per minute
     };
     return data;
 };
