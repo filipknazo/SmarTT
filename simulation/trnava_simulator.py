@@ -4,9 +4,11 @@ import json
 import traci
 import xml.etree.ElementTree as ET
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from model.ai_traffic_optimizer import TrafficLightOptimizer
+from model.ai_traffic_optimizer_neuron import TrafficLightOptimizerNeuron
 import matplotlib.pyplot as plt
+import torch.optim as optim
 
+FIXED_LENGTH = 5
 
 class SumoSimulationAPI:
     def __init__(self, config_file, sumo_binary="sumo-gui", scale_factor=288):
@@ -82,6 +84,22 @@ class SumoSimulationAPI:
             total_travel_time += traci.vehicle.getTimeLoss(vehicle_id)
         return total_travel_time
 
+def get_state(tl_id):
+    def fix_length(data, length=FIXED_LENGTH, default=0):
+        """Pad or truncate data to ensure a fixed length."""
+        return tuple(data[:length]) + (default,) * max(0, length - len(data))
+
+    vehicle_numbers = tuple(
+        traci.lane.getLastStepVehicleNumber(lane) for lane in traci.trafficlight.getControlledLanes(tl_id))
+    travel_times = tuple(traci.lane.getTraveltime(lane) for lane in traci.trafficlight.getControlledLanes(tl_id))
+
+    # Adjust to fixed length
+    fixed_vehicle_numbers = fix_length(vehicle_numbers, FIXED_LENGTH)
+    fixed_travel_times = fix_length(travel_times, FIXED_LENGTH)
+
+    state = fixed_vehicle_numbers + fixed_travel_times + (traci.trafficlight.getSpentDuration(tl_id), )
+    return state
+
 
 def run_simulation(use_ai, api, optimizer=None, simulation_time=3600):
     total_steps = int(simulation_time / api.step_length)
@@ -102,8 +120,9 @@ def run_simulation(use_ai, api, optimizer=None, simulation_time=3600):
             if use_ai:
                 traffic_lights = api.get_traffic_light_ids()
                 for tl_id in traffic_lights:
-                    state = tuple(traci.lane.getLastStepVehicleNumber(lane) for lane in traci.trafficlight.getControlledLanes(tl_id))
-                    action = optimizer.choose_action(state)
+                    state = get_state(tl_id)
+                    print(state)
+                    action = optimizer.choose_action(avg_wait_time, state)
                     api.set_light(tl_id, action)
 
         return metrics
@@ -130,15 +149,18 @@ def visualize_results(no_ai_metrics, ai_metrics):
 if __name__ == "__main__":
     CONFIG_FILE = "data/sumo_network/osm.sumocfg"
     api = SumoSimulationAPI(CONFIG_FILE)
-    optimizer = TrafficLightOptimizer(num_phases=4)
-    model_path = "data/models/traffic_light_model.npy"
+    optimizer = TrafficLightOptimizerNeuron(FIXED_LENGTH*2 + 1, num_phases=4)
+    optimizer.set_optimizer(optim.Adam(optimizer.parameters(), lr=0.001))
+    #model_path = "data/models/traffic_light_model.npy"
+    model_path = "data/models/traffic_light_model.torch"
 
     # Try loading pre-trained model
     if os.path.exists(model_path):
         optimizer.load_model(model_path)
+    optimizer.train()
 
     # Run simulations for 3600 seconds
-    simulation_time = 900  # Run simulation for 3600 seconds (1 hour)
+    simulation_time = 3600  # Run simulation for 3600 seconds (1 hour)
     no_ai_metrics = run_simulation(use_ai=False, api=api, simulation_time=simulation_time)
     ai_metrics = run_simulation(use_ai=True, api=api, optimizer=optimizer, simulation_time=simulation_time)
 
