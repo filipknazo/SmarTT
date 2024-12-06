@@ -66,9 +66,10 @@ class SumoSimulationAPI:
         if traffic_light_id not in traci.trafficlight.getIDList():
             raise ValueError(f"Traffic light ID '{traffic_light_id}' does not exist.")
         try:
-            if phase>0:
-                phase-=1
-                traci.trafficlight.setPhase(traffic_light_id, phase)
+            yy = traci.trafficlight.getRedYellowGreenState(traffic_light_id)
+            if yy != 'GGGgGrrrrrrr':
+                return
+            traci.trafficlight.setPhase(traffic_light_id, phase)
         except Exception as e:
             raise RuntimeError(f"Failed to set phase for traffic light '{traffic_light_id}': {e}")
 
