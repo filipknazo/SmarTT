@@ -64,6 +64,8 @@ sudo apt-get install sumo sumo-tools sumo-doc
 
 ## Usage
 
+Run from project root.
+
 ### Training 
 Train the AI model (this might take time):
 ```bash
@@ -73,10 +75,18 @@ python train_model.py
 ### Simulation
 Simulate city of Trnava with synthetic data without AI; you have to be in data/sumo_network folder:
 ```bash
-sumo-gui -c osm.sumocfg
+sumo-gui -c data/sumo_network/osm.sumocfg
 ```
 
 Simulate city of Trnava with synthetic data with AI.
 ```commandline
-python trnava_simulator.py
+python simulation/trnava_simulator.py
 ```
+
+When the SUMO's GUI is opened, you can clik on RUN (green arrow) button.
+
+---
+
+## Notes:
+
+1986226009 ID of traffic light is Cukrovar to Biely Kostol.
