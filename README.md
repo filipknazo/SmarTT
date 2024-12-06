@@ -90,4 +90,4 @@ When the SUMO's GUI is opened, you can clik on RUN (green arrow) button.
 ## Notes:
 
 1986226009 ID of traffic light is Cukrovar to Biely Kostol.
-Real data to SUMO can be done as described here https://sumo.dlr.de/docs/Demand/Routes_from_Observation_Points.html 
+Real data to SUMO can be migrated as described here https://sumo.dlr.de/docs/Demand/Routes_from_Observation_Points.html 
