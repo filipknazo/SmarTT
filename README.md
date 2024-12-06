@@ -49,7 +49,7 @@ Our solution leverages AI to dynamically adjust traffic flow by learning from re
 ### Python Libraries
 Install the following libraries via pip (recommended in venv):
 ```bash
-pip install numpy pandas tensorflow scikit-learn matplotlib
+pip install -r requirements.txt
 ```
 
 ### SUMO Eclipse
