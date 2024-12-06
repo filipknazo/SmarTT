@@ -31,9 +31,10 @@ def getActionsSingle(net, current_wait_time, state):
         decision_logits = net(state_tensor, global_tensor)
 
         # Convert logits to decision action
-        temperature = 4
+        temperature = 0.1
         decision_probs = F.softmax(decision_logits[0] / temperature, dim=0)
-        decision_action = torch.multinomial(decision_probs, num_samples=1).item()
+        decision_action = torch.argmax(decision_probs).item()
+        #decision_action = torch.multinomial(decision_probs, num_samples=1).item()
 
         return decision_logits, decision_action
 
@@ -50,7 +51,7 @@ class TrafficLightOptimizerNeuron(nn.Module):
         self.combined_input = hidden_size + self.global_output
         self.output_possibilities = num_phases
         self.memory = deque()
-        self.look_back = 60
+        self.look_back = 10
 
         # Global input -> linear
         # Local input  -> lstm
@@ -117,7 +118,7 @@ class TrafficLightOptimizerNeuron(nn.Module):
         self.cn_c = torch.zeros(1, 1, self.combined_input)
 
 
-    def getLoss(loss, decision_logits, decision_action):
+    def getLoss(sefl, loss, decision_logits, decision_action):
         decision_probs = F.softmax(decision_logits[0], dim=0)
 
         epsilon = 1e-10
@@ -128,24 +129,34 @@ class TrafficLightOptimizerNeuron(nn.Module):
         return lossAction
 
 
-    def applyExperience(total_loss, optimizer):
+    def applyExperience(self, total_loss):
         # Backpropagation step
         total_loss.backward()
-        optimizer.step()
-        optimizer.zero_grad()
+        self.optimizer.step()
+        self.optimizer.zero_grad()
 
-    def choose_action(self, currentWaitTime, state):
+    def choose_action(self, total_num_vehicles, currentWaitTime, state):
         decision_logits, decision_action = getActionsSingle(self, currentWaitTime, state)
-        self.memory.append((decision_logits, decision_action, currentWaitTime))
+        self.memory.append((decision_logits, decision_action, currentWaitTime, total_num_vehicles))
         return decision_action
 
 
     expected_shape = torch.Size([])
-    def applyMemoryUpdates(currentWaitTime):
-        if self.memory > self.look_back - 1:
-            decision_logits, decision_action, previous_wait_time = tcl.net.memory.popleft()
-            loss = (currentWaitTime-previous_wait_time)
-            loss_tensor = getLoss(loss, decision_logits, decision_action)
+    def applyMemoryUpdates(self, total_num_vehicles, currentWaitTime):
+        if len(self.memory) % 10!=0:
+            return
+        total_loss = 0
+        for i in range(10):
+            if len(self.memory) > self.look_back - 1:
+                decision_logits, decision_action, previous_wait_time, vehicles = self.memory.popleft()
+                loss = -(currentWaitTime-previous_wait_time)
+                print(f"C:{currentWaitTime}, P:{previous_wait_time}, L:{loss}, D:{decision_action}")
+                loss_tensor = self.getLoss(loss, decision_logits, decision_action)
+                loss_tensor.requires_grad = True
 
-            if loss_tensor is not None and loss_tensor.shape == expected_shape:
-                applyExperience(loss_tensor, tcl.net.optimizer)
+                print(decision_action, loss)
+
+                if loss_tensor is not None and loss_tensor.shape == self.expected_shape:
+                    total_loss += loss_tensor
+        self.applyExperience(loss_tensor)
+

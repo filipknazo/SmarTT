@@ -66,7 +66,9 @@ class SumoSimulationAPI:
         if traffic_light_id not in traci.trafficlight.getIDList():
             raise ValueError(f"Traffic light ID '{traffic_light_id}' does not exist.")
         try:
-            traci.trafficlight.setPhase(traffic_light_id, phase)
+            if phase>0:
+                phase-=1
+                traci.trafficlight.setPhase(traffic_light_id, phase)
         except Exception as e:
             raise RuntimeError(f"Failed to set phase for traffic light '{traffic_light_id}': {e}")
 
@@ -78,11 +80,23 @@ class SumoSimulationAPI:
             num_vehicles += 1
         return total_wait_time / num_vehicles if num_vehicles > 0 else 0
 
+    def get_num_vehicles(self):
+        return len(traci.vehicle.getIDList())
+
     def get_total_travel_time(self):
         total_travel_time = 0
         for vehicle_id in traci.vehicle.getIDList():
             total_travel_time += traci.vehicle.getTimeLoss(vehicle_id)
         return total_travel_time
+
+def get_wait_time_tls(tl_id):
+    wait = 0
+    total_lanes = 0
+    for t in (traci.lane.getTraveltime(lane) for lane in traci.trafficlight.getControlledLanes(tl_id)):
+        wait += t
+        total_lanes += 1
+    wait /= total_lanes
+    return wait
 
 def get_state(tl_id):
     def fix_length(data, length=FIXED_LENGTH, default=0):
@@ -113,6 +127,7 @@ def run_simulation(use_ai, api, optimizer=None, simulation_time=3600):
         for step in range(total_steps):
             api.simulation_step()
             avg_wait_time = api.get_average_wait_time()
+            total_num_vehicles = api.get_num_vehicles()
             total_travel_time = api.get_total_travel_time()
             metrics["average_wait_time"].append(avg_wait_time)
             metrics["total_travel_time"].append(total_travel_time)
@@ -122,8 +137,12 @@ def run_simulation(use_ai, api, optimizer=None, simulation_time=3600):
                 for tl_id in traffic_lights:
                     state = get_state(tl_id)
                     print(state)
-                    action = optimizer.choose_action(avg_wait_time, state)
-                    api.set_light(tl_id, action)
+
+                    wait = get_wait_time_tls(tl_id)
+                    action = optimizer.choose_action(total_num_vehicles, wait+avg_wait_time, state)
+                    if action != 0:
+                        api.set_light(tl_id, action-1)
+                    optimizer.applyMemoryUpdates(total_num_vehicles, wait+avg_wait_time)
 
         return metrics
     finally:
@@ -144,25 +163,29 @@ def visualize_results(no_ai_metrics, ai_metrics):
     plt.legend()
     plt.title("Average Wait Time Comparison")
     plt.show()
+    plt.savefig('plot.png')
 
 
 if __name__ == "__main__":
     CONFIG_FILE = "data/sumo_network/osm.sumocfg"
     api = SumoSimulationAPI(CONFIG_FILE)
-    optimizer = TrafficLightOptimizerNeuron(FIXED_LENGTH*2 + 1, num_phases=4)
+    optimizer = TrafficLightOptimizerNeuron(FIXED_LENGTH*2 + 1, num_phases=5)
     optimizer.set_optimizer(optim.Adam(optimizer.parameters(), lr=0.001))
-    #model_path = "data/models/traffic_light_model.npy"
-    model_path = "data/models/traffic_light_model.torch"
+    model_path = "data/models/traffic_light_model.npy"
+    model_path = "data/models/traffic_light_model12.torch"
 
     # Try loading pre-trained model
     if os.path.exists(model_path):
         optimizer.load_model(model_path)
     optimizer.train()
 
+    #no_ai_metrics=None
     # Run simulations for 3600 seconds
-    simulation_time = 3600  # Run simulation for 3600 seconds (1 hour)
+    simulation_time = 900  # Run simulation for 3600 seconds (1 hour)
     no_ai_metrics = run_simulation(use_ai=False, api=api, simulation_time=simulation_time)
     ai_metrics = run_simulation(use_ai=True, api=api, optimizer=optimizer, simulation_time=simulation_time)
+
+    optimizer.save_model(model_path)
 
     # Save results
     save_results(no_ai_metrics, "data/results/no_ai_metrics.json")
