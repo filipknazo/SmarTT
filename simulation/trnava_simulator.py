@@ -1,6 +1,5 @@
 import os
 import traci
-import time
 import xml.etree.ElementTree as ET
 
 
