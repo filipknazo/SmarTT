@@ -91,6 +91,15 @@ When the SUMO's GUI is opened, you can clik on RUN (green arrow) button.
 
 1986226009 ID of traffic light is Cukrovar to Biely Kostol.
 
+GS_9771794856 ID of traffic light at LIDL.
+
+26905040 ID studentska.
+
+21590556 ID stanica.
+
+
+
+
 Real data to SUMO can be migrated as described here https://sumo.dlr.de/docs/Demand/Routes_from_Observation_Points.html 
 
 Unknown vehicle classes are now ignored by sumo to ensure upwards compatibility when adding classes in the future. Netconvert and duarouter support this behavior by setting option --ignore-errors
