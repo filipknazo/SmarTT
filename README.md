@@ -66,19 +66,13 @@ sudo apt-get install sumo sumo-tools sumo-doc
 
 Run from project root.
 
-### Training 
-Train the AI model (this might take time):
-```bash
-python train_model.py
-```
-
 ### Simulation
 Simulate city of Trnava with synthetic data without AI; you have to be in data/sumo_network folder:
 ```bash
 sumo-gui -c data/sumo_network/osm.sumocfg
 ```
 
-Simulate city of Trnava with synthetic data with AI.
+Simulate city of Trnava with synthetic data without and then with AI, includes training.
 ```commandline
 python simulation/trnava_simulator.py
 ```
