@@ -19,7 +19,7 @@ Our solution leverages AI to dynamically adjust traffic flow by learning from re
 - **Preprocessing**: Data was cleaned and transformed using `sed` commands.
 - **Model Training**: LSTM model trained to predict optimal traffic light adjustments based on historical data.
 - **Simulation**: Decision-making capabilities of the model tested in SUMO Eclipse with a generated map of Trnava.
-- **Visualization**: Mockups to showcase potential GUI for training and monitoring at https://trnavaflow.surge.sh/. This is not a core feature.
+- **Visualization**: Mockups to showcase potential GUI for training and monitoring at https://trnavaflow.surge.sh/. **This is not a core feature, only showcase on how interface for training could look like**. Deployed using surge.
 
 ---
 
