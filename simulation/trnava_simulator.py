@@ -138,7 +138,7 @@ if __name__ == "__main__":
         optimizer.load_model(model_path)
 
     # Run simulations for 3600 seconds
-    simulation_time = 900  # Run simulation for 3600 seconds (1 hour)
+    simulation_time = 450  # Run simulation for 3600 seconds (1 hour)
     no_ai_metrics = run_simulation(use_ai=False, api=api, simulation_time=simulation_time)
     ai_metrics = run_simulation(use_ai=True, api=api, optimizer=optimizer, simulation_time=simulation_time)
 
